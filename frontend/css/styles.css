@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: system-ui, Arial, Helvetica, sans-serif; }
+.appbar {
+  height: 56px; padding: 0 12px; display: flex; align-items: center;
+  border-bottom: 1px solid #e5e7eb; background: #fff; position: sticky; top: 0; z-index: 10;
+}
+.brand { font-weight: 700; }
+.spacer { flex: 1; }
+.api-box { display: flex; gap: 6px; align-items: center; }
+.api-box input { width: 280px; padding: 6px; }
+
+main { display: grid; grid-template-columns: 1fr 360px; gap: 12px; padding: 12px; }
+@media (max-width: 1000px) { main { grid-template-columns: 1fr; } .right { order: -1; } }
+
+#map { height: 65vh; width: 100%; border-radius: 10px; border: 1px solid #e5e7eb; }
+.controls { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls input { padding: 6px; min-width: 220px; }
+.controls button { padding: 8px 12px; cursor: pointer; }
+.metrics { margin-top: 8px; color: #374151; }
+
+.right { display: flex; flex-direction: column; gap: 12px; }
+.card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; background: #fff; }
+.card h3 { margin: 0 0 8px; font-size: 16px; }
+.card .row { display: flex; gap: 8px; align-items: center; }
+.card .wrap { flex-wrap: wrap; }
+.card.small ul { margin: 6px 0 0; padding-left: 16px; max-height: 240px; overflow: auto; }
+.card.small li { padding: 4px 0; cursor: pointer; }
+.card.small li:hover { text-decoration: underline; }
+
+.import-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; cursor: pointer; }
+
+textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
+
+.toast {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,.85); color: white; padding: 10px 14px; border-radius: 8px; display: none;
+}
+.leaflet-container { background: #e5e7eb; }

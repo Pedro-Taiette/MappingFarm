@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Farm Polygon — OSM (Leaflet)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand">Farm Polygon</div>
+    <div class="spacer"></div>
+    <div class="api-box">
+      <input id="apiBase" placeholder="API base (auto)" />
+      <button id="saveApiBtn" title="Salvar API base">Salvar</button>
+      <button id="resetApiBtn" title="Limpar">Limpar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div id="map"></div>
+      <div class="controls">
+        <input id="farmName" placeholder="Nome da fazenda" />
+        <button id="drawBtn">Desenhar</button>
+        <button id="editBtn">Editar</button>
+        <button id="clearBtn">Limpar</button>
+        <div class="spacer"></div>
+        <button id="saveBtn">Salvar na API</button>
+      </div>
+      <div class="metrics" id="metrics">Área: — | Perímetro: —</div>
+    </section>
+
+    <section class="right">
+      <div class="card">
+        <h3>Carregar fazenda</h3>
+        <div class="row">
+          <input id="farmId" placeholder="ID" />
+          <button id="loadBtn">Carregar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Exportar / Importar</h3>
+        <div class="row wrap">
+          <button id="exportBtn">Exportar GeoJSON</button>
+          <label class="import-btn">
+            Importar GeoJSON
+            <input type="file" id="importInput" accept=".json,.geojson,application/geo+json,application/json" hidden>
+          </label>
+        </div>
+        <textarea id="geojsonText" placeholder="GeoJSON aqui (exportado/importado)" rows="8"></textarea>
+      </div>
+
+      <div class="card small">
+        <h3>Lista rápida</h3>
+        <button id="listBtn">Listar fazendas</button>
+        <ul id="farmsList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
