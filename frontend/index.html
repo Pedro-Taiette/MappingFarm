@@ -24,22 +24,26 @@
       <div id="map"></div>
       <div class="controls">
         <input id="farmName" placeholder="Nome da fazenda" />
+        <input id="farmId" placeholder="ID (para atualizar/deletar)" style="width:180px" />
         <button id="drawBtn">Desenhar</button>
         <button id="editBtn">Editar</button>
         <button id="clearBtn">Limpar</button>
         <div class="spacer"></div>
-        <button id="saveBtn">Salvar na API</button>
+        <button id="saveBtn">Criar</button>
+        <button id="updateBtn">Atualizar</button>
+        <button id="deleteBtn" class="danger">Deletar</button>
       </div>
       <div class="metrics" id="metrics">Área: — | Perímetro: —</div>
     </section>
 
     <section class="right">
-      <div class="card">
-        <h3>Carregar fazenda</h3>
+      <div class="card small">
+        <h3>Lista rápida</h3>
         <div class="row">
-          <input id="farmId" placeholder="ID" />
-          <button id="loadBtn">Carregar</button>
+          <button id="listBtn">Listar fazendas</button>
+          <button id="refreshBtn">Atualizar lista</button>
         </div>
+        <ul id="farmsList"></ul>
       </div>
 
       <div class="card">
@@ -52,12 +56,6 @@
           </label>
         </div>
         <textarea id="geojsonText" placeholder="GeoJSON aqui (exportado/importado)" rows="8"></textarea>
-      </div>
-
-      <div class="card small">
-        <h3>Lista rápida</h3>
-        <button id="listBtn">Listar fazendas</button>
-        <ul id="farmsList"></ul>
       </div>
     </section>
   </main>

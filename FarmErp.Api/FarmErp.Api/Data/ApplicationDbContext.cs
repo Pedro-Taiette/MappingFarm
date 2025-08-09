@@ -14,7 +14,7 @@ namespace FarmErp.Api.Data
             modelBuilder.Entity<Farm>(b =>
             {
                 b.HasKey(f => f.Id);
-                // Store as SQL Server 'geography' with SRID 4326 (WGS84) // For postgres, use 'geometry' with SRID 4326
+                // Store as SQL Server 'geography' with SRID 4326 (WGS84) / postgres, use 'geometry' with SRID 4326
                 b.Property(f => f.Area)
                     .HasColumnType("geography");
                 

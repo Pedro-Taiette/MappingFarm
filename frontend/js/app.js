@@ -63,11 +63,13 @@ function init() {
   $('drawBtn').addEventListener('click', () => new L.Draw.Polygon(map, drawControl.options.draw.polygon).enable());
   $('editBtn').addEventListener('click', () => new L.EditToolbar.Edit(map, { featureGroup: drawn }).enable());
   $('clearBtn').addEventListener('click', clearPolygon);
-  $('saveBtn').addEventListener('click', savePolygon);
-  $('loadBtn').addEventListener('click', loadPolygonById);
+  $('saveBtn').addEventListener('click', createFarm);
+  $('updateBtn').addEventListener('click', updateFarm);
+  $('deleteBtn').addEventListener('click', deleteFarm);
   $('exportBtn').addEventListener('click', exportGeoJSON);
   $('importInput').addEventListener('change', importGeoJSONFile);
   $('listBtn').addEventListener('click', listFarms);
+  $('refreshBtn').addEventListener('click', listFarms);
   $('saveApiBtn').addEventListener('click', saveApiBase);
   $('resetApiBtn').addEventListener('click', resetApiBase);
 }
@@ -88,7 +90,6 @@ function updateMetrics() {
   const ring = ringFromLayer(currentLayer);
   if (!ring || ring.length < 3) return;
 
-  // GeoJSON polygon (lng,lat)
   const coords = ring.map(p => [p.lng, p.lat]);
   coords.push(coords[0]); // fechar
   const poly = turf.polygon([coords]);
@@ -98,10 +99,10 @@ function updateMetrics() {
   $('metrics').textContent = `Área: ${km2(areaM2)} km² (${m2(areaM2)} m²) | Perímetro: ${km(perimeterM)} km (${m(perimeterM)} m)`;
 }
 
-function savePolygon() {
+// --- CRUD ---
+function createFarm() {
   const name = $('farmName').value || 'Minha Fazenda';
   if (!currentLayer) return toast('Desenhe um polígono antes de salvar.', true);
-
   const ring = ringFromLayer(currentLayer);
   if (!ring || ring.length < 3) return toast('Polígono muito pequeno.', true);
 
@@ -114,31 +115,83 @@ function savePolygon() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, coordinates: coords })
   })
-  .then(async res => {
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  })
-  .then(data => toast('Salvo! ID: ' + data.id))
+  .then(async res => { if (!res.ok) throw new Error(await res.text()); return res.json(); })
+  .then(data => { $('farmId').value = data.id; toast('Criado! ID: ' + data.id); listFarms(); })
   .catch(err => toast('Erro: ' + err.message, true));
 }
 
-function loadPolygonById() {
+function updateFarm() {
   const id = $('farmId').value;
-  if (!id) return toast('Informe um ID.', true);
+  if (!id) return toast('Informe o ID para atualizar.', true);
+  if (!currentLayer) return toast('Nada para atualizar — desenhe ou carregue um polígono.', true);
+
+  const name = $('farmName').value || 'Minha Fazenda';
+  const ring = ringFromLayer(currentLayer);
+  if (!ring || ring.length < 3) return toast('Polígono muito pequeno.', true);
+
+  const coords = ring.map(p => ({ lat: p.lat, lng: p.lng }));
+  if (coords.length > 0) coords.push(coords[0]);
 
   const api = getApiBase();
-  fetch(`${api}/api/farms/${id}`)
-    .then(async res => {
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
+  fetch(`${api}/api/farms/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, coordinates: coords })
+  })
+  .then(async res => { if (!res.ok) throw new Error(await res.text()); return null; })
+  .then(() => { toast('Atualizado.'); listFarms(); })
+  .catch(err => toast('Erro: ' + err.message, true));
+}
+
+function deleteFarm() {
+  const id = $('farmId').value;
+  if (!id) return toast('Informe o ID para deletar.', true);
+  if (!confirm('Tem certeza que deseja deletar?')) return;
+
+  const api = getApiBase();
+  fetch(`${api}/api/farms/${id}`, { method: 'DELETE' })
+    .then(async res => { if (!res.ok) throw new Error(await res.text()); return null; })
+    .then(() => {
+      toast('Deletado.');
+      $('farmId').value = '';
+      $('farmName').value = '';
+      clearPolygon();
+      listFarms();
     })
+    .catch(err => toast('Erro: ' + err.message, true));
+}
+
+function listFarms() {
+  const ul = $('farmsList');
+  ul.innerHTML = '<li>Carregando...</li>';
+  const api = getApiBase();
+  fetch(`${api}/api/farms`)
+    .then(async res => { if (!res.ok) throw new Error(await res.text()); return res.json(); })
+    .then(items => {
+      ul.innerHTML = '';
+      if (!Array.isArray(items) || items.length === 0) { ul.innerHTML = '<li>Nenhuma fazenda encontrada.</li>'; return; }
+      items.forEach(it => {
+        const li = document.createElement('li');
+        li.textContent = `#${it.id} — ${it.name}`;
+        li.title = 'Clique para carregar';
+        li.addEventListener('click', () => { loadAndFill(it.id); });
+        ul.appendChild(li);
+      });
+    })
+    .catch(err => { ul.innerHTML = `<li>Erro ao listar: ${err.message}</li>`; });
+}
+
+function loadAndFill(id) {
+  const api = getApiBase();
+  fetch(`${api}/api/farms/${id}`)
+    .then(async res => { if (!res.ok) throw new Error(await res.text()); return res.json(); })
     .then(data => {
       if (currentLayer) drawn.removeLayer(currentLayer);
       const path = data.coordinates.map(c => [c.lat, c.lng]);
       currentLayer = L.polygon(path);
       drawn.addLayer(currentLayer);
-
       map.fitBounds(currentLayer.getBounds());
+      $('farmId').value = data.id;
       $('farmName').value = data.name || '';
       updateMetrics();
       toast('Carregado: ' + data.name);
@@ -155,7 +208,7 @@ function exportGeoJSON() {
   const geojson = {
     type: "Feature",
     geometry: { type: "Polygon", coordinates: [coords] },
-    properties: { name: $('farmName').value || 'Minha Fazenda' }
+    properties: { name: $('farmName').value || 'Minha Fazenda', id: $('farmId').value || null }
   };
   $('geojsonText').value = JSON.stringify(geojson, null, 2);
   toast('GeoJSON exportado.');
@@ -166,13 +219,8 @@ function importGeoJSONFile(e) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    try {
-      const data = JSON.parse(reader.result);
-      importGeoJSON(data);
-      toast('GeoJSON importado.');
-    } catch (err) {
-      toast('Arquivo inválido.', true);
-    }
+    try { const data = JSON.parse(reader.result); importGeoJSON(data); toast('GeoJSON importado.'); }
+    catch (err) { toast('Arquivo inválido.', true); }
   };
   reader.readAsText(file);
 }
@@ -190,43 +238,10 @@ function importGeoJSON(obj) {
     drawn.addLayer(currentLayer);
     map.fitBounds(currentLayer.getBounds());
 
-    $('farmName').value = obj.properties?.name || '';
+    $('farmName').value = (obj.properties && obj.properties.name) || '';
+    $('farmId').value = (obj.properties && obj.properties.id) || '';
     updateMetrics();
-  } catch (e) {
-    toast('GeoJSON inválido: ' + e.message, true);
-  }
-}
-
-// ---- FIX: Lista rápida ----
-function listFarms() {
-  const ul = $('farmsList');
-  ul.innerHTML = '<li>Carregando...</li>';
-  const api = getApiBase();
-  fetch(`${api}/api/farms`)
-    .then(async res => {
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    })
-    .then(items => {
-      ul.innerHTML = '';
-      if (!Array.isArray(items) || items.length === 0) {
-        ul.innerHTML = '<li>Nenhuma fazenda encontrada.</li>';
-        return;
-      }
-      items.forEach(it => {
-        const li = document.createElement('li');
-        li.textContent = `#${it.id} — ${it.name}`;
-        li.title = 'Clique para carregar';
-        li.addEventListener('click', () => {
-          $('farmId').value = it.id;
-          loadPolygonById();
-        });
-        ul.appendChild(li);
-      });
-    })
-    .catch(err => {
-      ul.innerHTML = `<li>Erro ao listar: ${err.message}</li>`;
-    });
+  } catch (e) { toast('GeoJSON inválido: ' + e.message, true); }
 }
 
 document.addEventListener('DOMContentLoaded', init);

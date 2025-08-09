@@ -16,6 +16,7 @@ main { display: grid; grid-template-columns: 1fr 360px; gap: 12px; padding: 12px
 .controls { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .controls input { padding: 6px; min-width: 220px; }
 .controls button { padding: 8px 12px; cursor: pointer; }
+.controls .danger { background: #fee2e2; border: 1px solid #fecaca; }
 .metrics { margin-top: 8px; color: #374151; }
 
 .right { display: flex; flex-direction: column; gap: 12px; }
