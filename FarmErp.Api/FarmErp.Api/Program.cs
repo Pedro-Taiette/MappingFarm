@@ -1,4 +1,5 @@
 using FarmErp.Api.Data;
+using FarmErp.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 const string CorsPolicy = "DefaultCors";
@@ -11,6 +12,8 @@ builder.Services
     .Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen();
+
+builder.Services.AddScoped<IFarmService, FarmService>();
 
 // CORS
 builder.Services.AddCors(options =>
